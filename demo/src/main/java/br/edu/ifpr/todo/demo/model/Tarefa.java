@@ -36,7 +36,7 @@ public class Tarefa {
     public boolean getImportante() {
         return importante;
     }
-    public void setId(boolean importante) {
+    public void setImportante(boolean importante) {
         this.importante = importante;
     }
     
