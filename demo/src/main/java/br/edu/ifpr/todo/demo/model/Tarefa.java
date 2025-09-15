@@ -2,8 +2,6 @@ package br.edu.ifpr.todo.demo.model;
 
 import java.time.LocalDate;
 
-import org.hibernate.annotations.*;
-
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
@@ -17,11 +15,14 @@ public class Tarefa {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+    
     private String nome;
     private String descricao;
-    
+    private boolean importante;
+
     @Enumerated(EnumType.STRING)
     private Status status;
+
     private LocalDate dataCriacao;
     private LocalDate dataPrazo;
 
@@ -30,6 +31,13 @@ public class Tarefa {
     }
     public void setId(long id) {
         this.id = id;
+    }
+
+    public boolean getImportante() {
+        return importante;
+    }
+    public void setId(boolean importante) {
+        this.importante = importante;
     }
     
     public String getNome() {

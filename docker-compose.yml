@@ -1,0 +1,31 @@
+version: '3.8'
+
+services:
+  # Banco de dados MySQL
+  mysql:
+    image: mysql:8.0
+    container_name: container_todo_db
+    environment:
+      MYSQL_ROOT_PASSWORD: aluno
+      MYSQL_DATABASE: todo_db
+      MYSQL_USER: aluno
+      MYSQL_PASSWORD: aluno
+    ports:
+      - "3336:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+    networks:
+      - app_network
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+
+networks:
+  app_network:
+    driver: bridge
+
+volumes:
+  mysql_data:
