@@ -1,7 +1,19 @@
 version: '3.8'
 
 services:
-  # Banco de dados MySQL
+  api:
+    build: .
+    container_name: springboot-api
+    ports:
+      - "8080:8080"
+    depends_on:
+      - db
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:mysql://localhost:3336/todo_db?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=America/Sao_Paulo
+      - SPRING_DATASOURCE_USERNAME=aluno
+      - SPRING_DATASOURCE_PASSWORD=aluno
+    networks:
+      - app-network
   mysql:
     image: mysql:8.0
     container_name: container_todo_db
@@ -29,3 +41,4 @@ networks:
 
 volumes:
   mysql_data:
+  app-network:
