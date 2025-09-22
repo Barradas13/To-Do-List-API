@@ -1,17 +1,15 @@
 package br.edu.ifpr.todo.demo.repository;
 
-import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.stereotype.Repository;
-
 import br.edu.ifpr.todo.demo.model.Tarefa;
 import br.edu.ifpr.todo.demo.model.Status;
+import org.springframework.data.jpa.repository.JpaRepository;
 import java.util.List;
 
-@Repository
 public interface TarefaRepository extends JpaRepository<Tarefa, Long> {
-
-    List<Tarefa> findByImportante(boolean importante);
-    List<Tarefa> findByStatus(Status status);
-    List<Tarefa> findByStatusAndImportante(Status status, boolean importante);
-
+    
+    // 🔐 Métodos específicos por usuário
+    List<Tarefa> findByUserId(Long userId);
+    List<Tarefa> findByUserIdAndStatus(Long userId, Status status);
+    List<Tarefa> findByUserIdAndImportante(Long userId, Boolean importante);
+    List<Tarefa> findByUserIdAndStatusAndImportante(Long userId, Status status, Boolean importante);
 }

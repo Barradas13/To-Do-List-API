@@ -1,55 +1,71 @@
 package br.edu.ifpr.todo.demo.controller;
 
 import br.edu.ifpr.todo.demo.model.Tarefa;
+import br.edu.ifpr.todo.demo.model.User;import br.edu.ifpr.todo.demo.model.Status;
 import br.edu.ifpr.todo.demo.repository.TarefaRepository;
-
+import br.edu.ifpr.todo.demo.repository.UserRepository;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-
-
-import br.edu.ifpr.todo.demo.model.Status;
-
-import org.springframework.web.bind.annotation.*;
-
+import java.util.Optional;
 
 @RestController
-@RequestMapping("api/tarefas")
+@RequestMapping("/api/tarefas")
 public class TarefaController {
 
     private final TarefaRepository tarefaRepository;
+    private final UserRepository userRepository;
 
-    public TarefaController(TarefaRepository tarefaRepository) {
+    public TarefaController(TarefaRepository tarefaRepository, UserRepository userRepository) {
         this.tarefaRepository = tarefaRepository;
+        this.userRepository = userRepository;
     }
 
-    // Criar tarefa
+    // Método auxiliar para obter o usuário autenticado
+    private Optional<User> getUsuarioAutenticado() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String email = authentication.getName(); // O email é o username no Spring Security
+        return userRepository.findByEmail(email);
+    }
+
+    // Criar tarefa - AGORA ASSOCIADA AO USUÁRIO AUTENTICADO
     @PostMapping
     public ResponseEntity<Tarefa> criar(@RequestBody Tarefa tarefa) {
+        Optional<User> usuario = getUsuarioAutenticado();
+        
         if (tarefa.getStatus() == null) {
             tarefa.setStatus(Status.AFAZER);
         }
-        tarefa.setDataCriacao(java.time.LocalDate.now());
+        tarefa.setDataCriacao(LocalDate.now());
+        tarefa.setUser(usuario.get()); // 🔐 Associa a tarefa ao usuário autenticado
+        
         Tarefa novaTarefa = tarefaRepository.save(tarefa);
         return ResponseEntity.status(201).body(novaTarefa);
     }
 
+    // Listar tarefas - APENAS DO USUÁRIO AUTENTICADO
     @GetMapping
     public ResponseEntity<List<Tarefa>> listarTodas(@RequestParam(required = false) Status status, @RequestParam(required = false) Boolean importante) {
+
+        Optional<User> usuario = getUsuarioAutenticado();
+        Long usuarioId = usuario.get().getId();
 
         List<Tarefa> tarefas;
 
         if (status != null && importante != null) {
-            tarefas = tarefaRepository.findByStatusAndImportante(status, importante);
+            tarefas = tarefaRepository.findByUserIdAndStatusAndImportante(usuarioId, status, importante);
         } else if (status != null) {
-            tarefas = tarefaRepository.findByStatus(status);
+            tarefas = tarefaRepository.findByUserIdAndStatus(usuarioId, status);
         } else if (importante != null) {
-            tarefas = tarefaRepository.findByImportante(importante);
+            tarefas = tarefaRepository.findByUserIdAndImportante(usuarioId, importante);
         } else {
-            tarefas = tarefaRepository.findAll();
+            tarefas = tarefaRepository.findByUserId(usuarioId);
         }
 
         if (tarefas.isEmpty()) {
@@ -59,33 +75,58 @@ public class TarefaController {
         return ResponseEntity.ok(tarefas);
     }
 
-    // Buscar tarefa por id
+    // Buscar tarefa por id - APENAS SE PERTENCER AO USUÁRIO
     @GetMapping("/{id}")
     public ResponseEntity<Tarefa> buscarPorId(@PathVariable Long id) {
+        Optional<User> usuario = getUsuarioAutenticado();
+        
         Optional<Tarefa> tarefa = tarefaRepository.findById(id);
-        return tarefa.map(ResponseEntity::ok)
-                     .orElse(ResponseEntity.notFound().build());
+        
+        if (tarefa.isPresent()) {
+            // 🔐 Verifica se a tarefa pertence ao usuário autenticado
+            if (!tarefa.get().getUser().getId().equals(usuario.get().getId())) {
+                return ResponseEntity.status(403).build(); // Forbidden - não é dono da tarefa
+            }
+            return ResponseEntity.ok(tarefa.get());
+        }
+        
+        return ResponseEntity.notFound().build();
     }
 
-    // Atualizar tarefa
+    // Atualizar tarefa - APENAS SE PERTENCER AO USUÁRIO
     @PutMapping("/{id}")
     public ResponseEntity<Tarefa> atualizar(@PathVariable Long id, @RequestBody Tarefa tarefaAtualizada) {
+        Optional<User> usuario = getUsuarioAutenticado();
+        
         return tarefaRepository.findById(id).map(tarefa -> {
+            // 🔐 Verifica se a tarefa pertence ao usuário
+            if (!tarefa.getUser().getId().equals(usuario.get().getId())) {
+                throw new RuntimeException("Acesso negado a esta tarefa");
+            }
+            
             tarefa.setNome(tarefaAtualizada.getNome());
             tarefa.setDescricao(tarefaAtualizada.getDescricao());
             tarefa.setImportante(tarefaAtualizada.getImportante());
             tarefa.setStatus(tarefaAtualizada.getStatus());
             tarefa.setDataPrazo(tarefaAtualizada.getDataPrazo());
+            
             return ResponseEntity.ok(tarefaRepository.save(tarefa));
         }).orElse(ResponseEntity.notFound().build());
     }
 
+    // Atualização parcial - APENAS SE PERTENCER AO USUÁRIO
     @PatchMapping("/{id}")
     public ResponseEntity<Tarefa> atualizarParcial(
             @PathVariable Long id,
             @RequestBody Map<String, Object> updates) {
 
+        Optional<User> usuario = getUsuarioAutenticado();
+        
         return tarefaRepository.findById(id).map(tarefa -> {
+            // 🔐 Verifica se a tarefa pertence ao usuário
+            if (!tarefa.getUser().getId().equals(usuario.get().getId())) {
+                throw new RuntimeException("Acesso negado a esta tarefa");
+            }
 
             updates.forEach((key, value) -> {
                 switch (key) {
@@ -113,14 +154,25 @@ public class TarefaController {
         }).orElse(ResponseEntity.notFound().build());
     }
 
-
-    // Deletar tarefa
+    // Deletar tarefa - APENAS SE PERTENCER AO USUÁRIO
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deletar(@PathVariable Long id) {
-        if (!tarefaRepository.existsById(id)) {
-            return ResponseEntity.notFound().build();
+        Optional<User> usuario = getUsuarioAutenticado();
+        
+        Optional<Tarefa> tarefaOptional = tarefaRepository.findById(id);
+        
+        if (tarefaOptional.isPresent()) {
+            Tarefa tarefa = tarefaOptional.get();
+            
+            // 🔐 Verifica se a tarefa pertence ao usuário
+            if (!tarefa.getUser().getId().equals(usuario.get().getId())) {
+                return ResponseEntity.status(403).build(); // Forbidden
+            }
+            
+            tarefaRepository.deleteById(id);
+            return ResponseEntity.noContent().build();
         }
-        tarefaRepository.deleteById(id);
-        return ResponseEntity.noContent().build();
+        
+        return ResponseEntity.notFound().build();
     }
 }
