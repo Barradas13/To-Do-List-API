@@ -6,7 +6,7 @@ services:
     dockerfilePath: ./Dockerfile
     envVars:
       - key: SPRING_DATASOURCE_URL
-        value: jdbc:postgresql://dpg-d38u87vfte5s73cdcd3g-a.render.com:5432/tododb_q0ws
+        value: jdbc:postgresql://dpg-d38u87vfte5s73cdcd3g-a.oregon-postgres.render.com:5432/tododb_q0ws
       - key: SPRING_DATASOURCE_USERNAME
         value: aluno
       - key: SPRING_DATASOURCE_PASSWORD
