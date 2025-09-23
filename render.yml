@@ -1,40 +1,13 @@
 services:
-  api:
-    build: .
-    container_name: springboot-api
-    ports:
-      - "8080:8080"
-    depends_on:
-      - mysql
-    environment:
-      - SPRING_DATASOURCE_URL=jdbc:mysql://mysql:3306/todo_db?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=America/Sao_Paulo
-      - SPRING_DATASOURCE_USERNAME=aluno
-      - SPRING_DATASOURCE_PASSWORD=aluno
-    networks:
-      - app_network
-  mysql:
-    image: mysql:8.0
-    container_name: container_todo_db
-    environment:
-      MYSQL_ROOT_PASSWORD: aluno
-      MYSQL_DATABASE: todo_db
-      MYSQL_USER: aluno
-      MYSQL_PASSWORD: aluno
-    ports:
-      - "3336:3306"
-    volumes:
-      - mysql_data:/var/lib/mysql
-    networks:
-      - app_network
-    healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-
-networks:
-  app_network:
-    driver: bridge
-
-volumes:
-  mysql_data:
+  - type: web
+    name: todo-api
+    env: docker
+    plan: free
+    dockerfilePath: ./Dockerfile
+    envVars:
+      - key: SPRING_DATASOURCE_URL
+        value: jdbc:postgresql://dpg-d38u87vfte5s73cdcd3g-a.render.com:5432/tododb_q0ws
+      - key: SPRING_DATASOURCE_USERNAME
+        value: aluno
+      - key: SPRING_DATASOURCE_PASSWORD
+        value: pFTSDlaeyuPoTrwhyVlgL2pQSDcfAYcB
