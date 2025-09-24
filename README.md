@@ -1,37 +1,65 @@
-# 📋 API To-Do List com Java & Spring Boot
+# To-Do List API
 
-Este projeto é um exemplo prático de como criar uma API RESTful para gerenciamento de tarefas (To-Do List) utilizando Java com o framework **Spring Boot**.
+Uma API RESTful para gerenciamento de tarefas com sistema de autenticação JWT.
 
+## 🔐 Autenticação
 
-## Iniciar o Projeto
+### Registrar Usuário
+```http
+POST https://apitodolist-qma3.onrender.com/auth/registro
+```
 
-### 1. Criar o Projeto com Spring Boot Initializr
+### Fazer Login
+```http
+POST https://apitodolist-qma3.onrender.com/auth/login
+```
 
-Você pode iniciar o projeto usando a extensão do Spring Boot no VS Code ou diretamente pelo site [start.spring.io](https://start.spring.io/).
+## 📊 Endpoints da API Tarefas
 
-**Via VS Code:**
+### Criar Tarefa
+```http
+POST https://apitodolist-qma3.onrender.com/api/tarefas
+```
 
-- Pressione `Ctrl + Shift + P`
-- Pesquise por: `Spring Initializr: Create a Maven Project`
-- Configure o projeto com as opções desejadas (grupo, artefato, nome etc.)
+### Listar Todas as Tarefas
+```http
+GET https://apitodolist-qma3.onrender.com/api/tarefas
+```
 
-### 2. Adicionar Dependências
+### Filtrar por Status
+```http
+GET https://apitodolist-qma3.onrender.com/api/tarefas?status=FAZENDO
+```
 
-Selecione as seguintes dependências:
+### Listar Tarefas Importantes
+```http
+GET https://apitodolist-qma3.onrender.com/api/tarefas?importante=true
+```
 
-- **Spring Web** (para criação da API REST)
-- **Spring Data JPA** (para persistência no banco de dados)
-- **Spring Boot DevTools** (para hot reload durante o desenvolvimento)
-- **MySQL Driver** (driver para conexão com banco MySQL)
-- **Lombok** (para reduzir boilerplate com getters/setters, constructors etc.)
-- **Validation** (para validações com anotações, como `@NotNull`, `@Size`, etc.)
+### Buscar Tarefa por ID
+```http
+GET https://apitodolist-qma3.onrender.com/api/tarefas/{id}
+```
+
+### Atualização Parcial
+```http
+PATCH https://apitodolist-qma3.onrender.com/api/tarefas/{id}
+```
+
+### Excluir Tarefa
+```http
+DELETE https://apitodolist-qma3.onrender.com/api/tarefas/{id}
+```
+
+## 🎯 Status Disponíveis
+- `A_FAZER`
+- `FAZENDO` 
+- `FEITO`
+
+## 📅 Formato de Datas
+- `yyyy-MM-dd` (ex: `"2025-09-01"`)
 
 ---
 
-## Estrutura de Pacotes
-
-Crie os pacotes controller, model e service para estruturar seu projeto com o padrão que você preferir
-
-## Configurando o banco de dados
-
-Em resources.application.properties configure seu banco de dados MySQL com as informações dele por exemplo username, password...
+**URL Base**: `https://apitodolist-qma3.onrender.com`  
+**Repositório**: [https://github.com/Barradas13/To-Do-List-API](https://github.com/Barradas13/To-Do-List-API)
