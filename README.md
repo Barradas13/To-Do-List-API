@@ -61,5 +61,4 @@ DELETE https://apitodolist-qma3.onrender.com/api/tarefas/{id}
 
 ---
 
-**URL Base**: `https://apitodolist-qma3.onrender.com`  
-**Repositório**: [https://github.com/Barradas13/To-Do-List-API](https://github.com/Barradas13/To-Do-List-API)
+**URL Base**: `https://apitodolist-qma3.onrender.com` 
